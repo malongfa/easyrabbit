@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-import com.personal.easy.rabbit.Message;
+import com.personal.easy.rabbit.message.Message;
 
 /**
  * A message publisher publishes messages to a broker.

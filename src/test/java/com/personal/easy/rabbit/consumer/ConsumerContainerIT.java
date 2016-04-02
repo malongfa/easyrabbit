@@ -1,15 +1,8 @@
 package com.personal.easy.rabbit.consumer;
 
-import com.personal.easy.rabbit.Message;
-import com.personal.easy.rabbit.SingleConnectionFactory;
-import com.personal.easy.rabbit.TestBrokerSetup;
-import com.personal.easy.rabbit.consumer.ConsumerContainer;
-import com.personal.easy.rabbit.consumer.MessageCallback;
-import com.personal.easy.rabbit.publisher.MessagePublisher;
-import com.personal.easy.rabbit.publisher.SimplePublisher;
-import com.rabbitmq.client.Connection;
-
-import junit.framework.Assert;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -17,9 +10,14 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.personal.easy.rabbit.TestBrokerSetup;
+import com.personal.easy.rabbit.connection.SingleConnectionFactory;
+import com.personal.easy.rabbit.message.Message;
+import com.personal.easy.rabbit.publisher.MessagePublisher;
+import com.personal.easy.rabbit.publisher.SimplePublisher;
+import com.rabbitmq.client.Connection;
+
+import junit.framework.Assert;
 
 
 public class ConsumerContainerIT {
@@ -35,23 +33,23 @@ public class ConsumerContainerIT {
     
     @Before
     public void before() throws Exception {
-        brokerSetup = new TestBrokerSetup();
+        this.brokerSetup = new TestBrokerSetup();
         
-        connectionFactory = new SingleConnectionFactory();
-        connectionFactory.setHost(brokerSetup.getHost());
-        connectionFactory.setPort(brokerSetup.getPort());
-        publisher = new SimplePublisher(connectionFactory);
+        this.connectionFactory = new SingleConnectionFactory();
+        this.connectionFactory.setHost(this.brokerSetup.getHost());
+        this.connectionFactory.setPort(this.brokerSetup.getPort());
+        this.publisher = new SimplePublisher(this.connectionFactory);
     }
     
     @After
     public void after() throws Exception {
-        brokerSetup.tearDown();
-        connectionFactory.close();
+        this.brokerSetup.tearDown();
+        this.connectionFactory.close();
     }
     
     @Test
     public void shouldActivateAllConsumers() throws Exception {
-        brokerSetup.prepareSimpleTest();
+        this.brokerSetup.prepareSimpleTest();
         ConsumerContainer consumerContainer = prepareConsumerContainer(
             new TestConsumer(), TestBrokerSetup.TEST_QUEUE);
         consumerContainer.startAllConsumers();
@@ -61,18 +59,18 @@ public class ConsumerContainerIT {
     
     @Test
     public void shouldReActivateAllConsumers() throws Exception {
-        brokerSetup.prepareSimpleTest();
+        this.brokerSetup.prepareSimpleTest();
         ConsumerContainer consumerContainer = prepareConsumerContainer(
             new TestConsumer(), TestBrokerSetup.TEST_QUEUE);
         consumerContainer.startAllConsumers();
         int activeConsumerCount = consumerContainer.getActiveConsumers().size();
         Assert.assertEquals(1, activeConsumerCount);
-        Connection connection = connectionFactory.newConnection();
-        connectionFactory.setPort(15345);
+        Connection connection = this.connectionFactory.newConnection();
+        this.connectionFactory.setPort(15345);
         connection.close();
         int waitForReconnects = SingleConnectionFactory.CONNECTION_ESTABLISH_INTERVAL_IN_MS + SingleConnectionFactory.CONNECTION_TIMEOUT_IN_MS  * 2;
         Thread.sleep(waitForReconnects);
-        connectionFactory.setPort(brokerSetup.getPort());
+        this.connectionFactory.setPort(this.brokerSetup.getPort());
         Thread.sleep(waitForReconnects);
         activeConsumerCount = consumerContainer.getActiveConsumers().size();
         Assert.assertEquals(1, activeConsumerCount);
@@ -80,7 +78,7 @@ public class ConsumerContainerIT {
     
     @Test
     public void shouldReceiveAllMessages() throws Exception {
-        brokerSetup.prepareSimpleTest();
+        this.brokerSetup.prepareSimpleTest();
         TestConsumer testConsumer = new TestConsumer();
         ConsumerContainer consumerContainer = prepareConsumerContainer(testConsumer, TestBrokerSetup.TEST_QUEUE);
         consumerContainer.startAllConsumers();
@@ -89,7 +87,7 @@ public class ConsumerContainerIT {
                     .exchange(TestBrokerSetup.TEST_EXCHANGE)
                     .routingKey(TestBrokerSetup.TEST_ROUTING_KEY)
                     .body("" + i);
-            publisher.publish(message);
+            this.publisher.publish(message);
         }
         // Sleep depending on the amount of messages sent but at least 100 ms, and at most 1 sec
         Thread.sleep(Math.max(100, Math.min(1000, MESSAGE_AMOUNT * 10)));
@@ -104,7 +102,7 @@ public class ConsumerContainerIT {
 
     @Test
     public void shouldReceiveAllMessagesWithLimitedPrefetchCount() throws Exception {
-        brokerSetup.prepareSimpleTest();
+        this.brokerSetup.prepareSimpleTest();
         TestConsumer testConsumer = new TestConsumer();
         ConsumerContainer consumerContainer = prepareConsumerContainer(testConsumer, TestBrokerSetup.TEST_QUEUE, 10);
         consumerContainer.startAllConsumers();
@@ -113,7 +111,7 @@ public class ConsumerContainerIT {
                     .exchange(TestBrokerSetup.TEST_EXCHANGE)
                     .routingKey(TestBrokerSetup.TEST_ROUTING_KEY)
                     .body("" + i);
-            publisher.publish(message);
+            this.publisher.publish(message);
         }
         // Sleep depending on the amount of messages sent but at least 100 ms, and at most 1 sec
         Thread.sleep(Math.max(100, Math.min(1000, MESSAGE_AMOUNT * 10)));
@@ -128,7 +126,7 @@ public class ConsumerContainerIT {
 
     @Test(expected = IOException.class)
     public void shouldFailToStartConsumers() throws Exception {
-        brokerSetup.prepareSimpleTest();
+        this.brokerSetup.prepareSimpleTest();
         TestConsumer failingConsumer = new TestConsumer();
         ConsumerContainer consumerContainer = prepareConsumerContainer(failingConsumer, "test.missing.queue");
         consumerContainer.startAllConsumers();
@@ -136,7 +134,7 @@ public class ConsumerContainerIT {
     
     @Test
     public void shouldActivateConsumersUsingHighAvailability() throws Exception {
-        brokerSetup.prepareHighAvailabilityTest();
+        this.brokerSetup.prepareHighAvailabilityTest();
         TestConsumer testConsumer = new TestConsumer();
         ConsumerContainer consumerContainer = prepareConsumerContainer(testConsumer, TestBrokerSetup.TEST_HA_QUEUE);
         consumerContainer.startAllConsumers();
@@ -144,14 +142,14 @@ public class ConsumerContainerIT {
         Assert.assertEquals(1, activeConsumerCount);
     }
     
-    private ConsumerContainer prepareConsumerContainer(MessageCallback consumer, String queue) {
-        ConsumerContainer consumerContainer = new ConsumerContainer(connectionFactory);
+    private ConsumerContainer prepareConsumerContainer(final MessageCallback consumer, final String queue) {
+        ConsumerContainer consumerContainer = new ConsumerContainer(this.connectionFactory);
         consumerContainer.addConsumer(consumer, queue);
         return consumerContainer;
     }
 
-    private ConsumerContainer prepareConsumerContainer(MessageCallback consumer, String queue, int prefetchMessageCount) {
-        ConsumerContainer consumerContainer = new ConsumerContainer(connectionFactory);
+    private ConsumerContainer prepareConsumerContainer(final MessageCallback consumer, final String queue, final int prefetchMessageCount) {
+        ConsumerContainer consumerContainer = new ConsumerContainer(this.connectionFactory);
         consumerContainer.addConsumer(consumer, queue, prefetchMessageCount, 1);
         return consumerContainer;
     }
@@ -159,12 +157,12 @@ public class ConsumerContainerIT {
         
         private List<Message> receivedMessages = new ArrayList<Message>(MESSAGE_AMOUNT);
 
-        public void handleMessage(Message message) {
+        public void handleMessage(final Message message) {
             this.receivedMessages.add(message);
         }
         
         public List<Message> getReceivedMessages() {
-            return receivedMessages;
+            return this.receivedMessages;
         }
         
     }

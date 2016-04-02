@@ -1,6 +1,6 @@
 package com.personal.easy.rabbit.consumer;
 
-import com.personal.easy.rabbit.Message;
+import com.personal.easy.rabbit.message.Message;
 
 /**
  * Called for every new message. Implementations of this class need to be thread-safe.

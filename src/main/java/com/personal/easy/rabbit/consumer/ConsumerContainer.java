@@ -9,8 +9,8 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.personal.easy.rabbit.ConnectionListener;
-import com.personal.easy.rabbit.SingleConnectionFactory;
+import com.personal.easy.rabbit.connection.ConnectionListener;
+import com.personal.easy.rabbit.connection.SingleConnectionFactory;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -460,7 +460,6 @@ public class ConsumerContainer {
                 }
                 catch (IOException e) {
                     LOGGER.error("Failed to activate consumer - deactivating already activated consumers");
-                    // deactivateConsumers(consumerHolders);
                     throw e;
                 }
             }

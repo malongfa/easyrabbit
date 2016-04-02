@@ -4,8 +4,8 @@ package com.personal.easy.rabbit.publisher;
 import org.junit.After;
 import org.junit.Before;
 
-import com.personal.easy.rabbit.SingleConnectionFactory;
 import com.personal.easy.rabbit.TestBrokerSetup;
+import com.personal.easy.rabbit.connection.SingleConnectionFactory;
 import com.personal.easy.rabbit.setting.BrokerAssert;
 
 

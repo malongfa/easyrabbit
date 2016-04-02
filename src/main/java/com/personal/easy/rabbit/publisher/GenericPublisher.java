@@ -1,6 +1,6 @@
 package com.personal.easy.rabbit.publisher;
 
-import com.personal.easy.rabbit.Message;
+import com.personal.easy.rabbit.message.Message;
 import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;

@@ -5,8 +5,8 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.personal.easy.rabbit.Message;
 import com.rabbitmq.client.AMQP.BasicProperties;
+import com.personal.easy.rabbit.message.Message;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
 
@@ -81,7 +81,7 @@ public class MessageConsumer extends ConsumerContainer.ManagedConsumer {
     /**
      * <p>
      * Handles a message delivery from the broker by converting the received
-     * message parts to a {@link com.personal.easy.rabbit.Message} which
+     * message parts to a {@link com.personal.easy.rabbit.message.Message} which
      * provides convenient access to the message parts and hands it over to the
      * {@link com.personal.rabbitmq.consumer.MessageCallback.handleMessage(com.personal.
      * rabbitmq.Message)} method.

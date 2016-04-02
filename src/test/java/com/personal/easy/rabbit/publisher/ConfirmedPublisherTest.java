@@ -6,7 +6,7 @@ import static org.easymock.EasyMock.expectLastCall;
 import org.junit.Test;
 import org.powermock.api.easymock.PowerMock;
 
-import com.personal.easy.rabbit.Message;
+import com.personal.easy.rabbit.message.Message;
 import com.personal.easy.rabbit.publisher.ConfirmedPublisher;
 
 
